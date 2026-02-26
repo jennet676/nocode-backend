@@ -8,6 +8,7 @@ router.use(authMiddleware);
 router.post('/', projectController.createProject);
 router.get('/', projectController.getProjects);
 router.get('/:id', projectController.getProjectById);
+router.get('/:id/versions', projectController.getProjectVersions);
 router.put('/:id', projectController.updateProject);
 router.delete('/:id', projectController.deleteProject);
 
