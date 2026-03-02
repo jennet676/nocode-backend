@@ -1,0 +1,140 @@
+### API Configuration
+@baseUrl = http://localhost:5000/api
+@contentType = application/json
+
+### 1. User Management
+
+# @name register
+POST {{baseUrl}}/users/register
+Content-Type: {{contentType}}
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+###
+
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: {{contentType}}
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+### Capture Token
+@authToken = {{login.response.body.token}}
+@userId = {{login.response.body.user.id}}
+
+###
+
+# @name getUsers
+GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name getUserById
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name updateUser
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+    "email": "updated@example.com"
+}
+
+###
+
+# @name deleteUser
+DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+
+
+### 2. Project Management
+
+# @name createProject
+POST {{baseUrl}}/projects
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+    "project_name": "My New Project",
+    "generated_code": "console.log('Hello World');",
+    "user_prompt": "Create a hello world app"
+}
+
+###
+@projectId = {{createProject.response.body.id}}
+
+###
+
+# @name getProjects
+GET {{baseUrl}}/projects
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name getProjectById
+GET {{baseUrl}}/projects/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name updateProject
+# This will automatically create a version of the previous state
+PUT {{baseUrl}}/projects/{{projectId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+    "project_name": "Updated Project Name",
+    "generated_code": "console.log('Hello Updated World');",
+    "user_prompt": "Update the app to say hello updated world",
+    "version_name": "v1.1 Update"
+}
+
+### 3. Project Versions
+
+# @name getProjectVersions
+GET {{baseUrl}}/projects/{{projectId}}/versions
+Authorization: Bearer {{authToken}}
+
+###
+@versionId = {{getProjectVersions.response.body[0].id}}
+
+###
+
+# @name getVersionById
+GET {{baseUrl}}/projects/{{projectId}}/versions/{{versionId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name restoreVersion
+POST {{baseUrl}}/projects/{{projectId}}/versions/{{versionId}}/restore
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name deleteProject
+DELETE {{baseUrl}}/projects/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+
+### 4. Swagger Documentation
+
+# @name getSwaggerUI
+GET http://localhost:5000/api-docs
+
+###
+
+# @name getSwaggerJSON
+GET http://localhost:5000/api-docs.json

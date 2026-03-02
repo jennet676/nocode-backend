@@ -1,13 +1,14 @@
-const db = require('../db');
-const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+import * as db from '../db.js';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const hashPassword = (password) => {
     return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -28,7 +29,7 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -49,7 +50,7 @@ exports.login = async (req, res) => {
     }
 };
 
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
     try {
         const result = await db.query('SELECT id, email FROM users');
         res.json(result.rows);
@@ -58,7 +59,7 @@ exports.getUsers = async (req, res) => {
     }
 };
 
-exports.getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await db.query('SELECT id, email FROM users WHERE id = $1', [id]);
@@ -71,18 +72,18 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-exports.updateUser = async (req, res) => {
+export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { email, password } = req.body;
     try {
-        let query = 'UPDATE users SET email = $1';
+        let queryStr = 'UPDATE users SET email = $1';
         let params = [email, id];
         if (password) {
-            query += ', password = $3';
+            queryStr += ', password = $3';
             params.push(hashPassword(password));
         }
-        query += ' WHERE id = $2 RETURNING id, email';
-        const result = await db.query(query, params);
+        queryStr += ' WHERE id = $2 RETURNING id, email';
+        const result = await db.query(queryStr, params);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -92,7 +93,7 @@ exports.updateUser = async (req, res) => {
     }
 };
 
-exports.deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await db.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
