@@ -10,11 +10,14 @@ import authMiddleware from '../middleware/auth.js';
  *     User:
  *       type: object
  *       required:
+ *         - username
  *         - email
  *         - password
  *       properties:
  *         id:
  *           type: integer
+ *         username:
+ *           type: string
  *         email:
  *           type: string
  *         password:

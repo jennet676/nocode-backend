@@ -112,8 +112,29 @@ router.get('/:id', projectController.getProjectById);
  *     responses:
  *       200:
  *         description: List of project versions
+ *   post:
+ *     summary: Create a project version manually
+ *     tags: [Project Versions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProjectVersion'
+ *     responses:
+ *       201:
+ *         description: Version created
  */
 router.get('/:id/versions', projectController.getProjectVersions);
+router.post('/:id/versions', projectController.createProjectVersion);
 
 /**
  * @swagger
@@ -137,8 +158,57 @@ router.get('/:id/versions', projectController.getProjectVersions);
  *     responses:
  *       200:
  *         description: Version details
+ *   put:
+ *     summary: Update version name
+ *     tags: [Project Versions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: versionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               version_name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Version updated
+ *   delete:
+ *     summary: Delete a version
+ *     tags: [Project Versions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: versionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Version deleted
  */
 router.get('/:id/versions/:versionId', projectController.getProjectVersionById);
+router.put('/:id/versions/:versionId', projectController.updateProjectVersion);
+router.delete('/:id/versions/:versionId', projectController.deleteProjectVersion);
 
 /**
  * @swagger
