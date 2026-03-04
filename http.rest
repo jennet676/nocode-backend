@@ -1,5 +1,5 @@
 ### API Configuration
-@baseUrl = http://localhost:5000/api
+@baseUrl = http://192.168.1.107:5000/api
 @contentType = application/json
 
 ### 1. User Management
@@ -9,8 +9,8 @@ POST {{baseUrl}}/users/register
 Content-Type: {{contentType}}
 
 {
-    "email": "test@example.com",
-    "password": "password123"
+    "email": "salam@example.com",
+    "password": "123"
 }
 
 ###
@@ -20,8 +20,8 @@ POST {{baseUrl}}/users/login
 Content-Type: {{contentType}}
 
 {
-    "email": "test@example.com",
-    "password": "password123"
+    "email": "salam@example.com",
+    "password": "123"
 }
 
 ### Capture Token
@@ -161,9 +161,9 @@ Authorization: Bearer {{authToken}}
 ### 4. Swagger Documentation
 
 # @name getSwaggerUI
-GET http://localhost:5000/api-docs
+GET http://192.168.1.107:5000/api-docs
 
 ###
 
 # @name getSwaggerJSON
-GET http://localhost:5000/api-docs.json
+GET http://192.168.1.107:5000/api-docs.json

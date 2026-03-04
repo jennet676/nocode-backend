@@ -26,7 +26,9 @@ export const register = async (req, res) => {
             'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',
             [email, hashedPassword]
         );
-        sendSuccess(res, result.rows[0], 'Hasap döredildi', 201);
+        const user = result.rows[0];
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
+        sendSuccess(res, { token, user: { id: user.id, email: user.email } }, 'Hasap döredildi we giriş edildi', 201);
     } catch (err) {
         if (err.code === '23505') {
             const field = err.detail.includes('username') ? 'Ulanyjy ady' : 'Email';
@@ -62,7 +64,7 @@ export const login = async (req, res) => {
             return sendUnauthorized(res, 'Email ýa-da parol nädogry');
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET);
         sendSuccess(res, { token, user: { id: user.id, email: user.email, username: user.username } }, 'Giriş şowly');
     } catch (err) {
         sendError(res, err.message);
