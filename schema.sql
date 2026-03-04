@@ -13,11 +13,12 @@ CREATE TABLE IF NOT EXISTS projects (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS project_versions (
+CREATE TABLE IF NOT EXISTS project_prompts (
     id SERIAL PRIMARY KEY,
     project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
-    version_name VARCHAR(255),
-    generated_code TEXT NOT NULL,
-    user_prompt TEXT,
+    prompt TEXT NOT NULL,
+    ai_response TEXT,
+    generated_code TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+

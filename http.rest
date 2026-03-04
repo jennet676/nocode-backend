@@ -99,29 +99,17 @@ Content-Type: {{contentType}}
     "project_name": "Updated Project Name",
     "generated_code": "console.log('Hello Updated World');",
     "user_prompt": "Update the app to say hello updated world",
-    "version_name": "v1.1 Update"
+    "ai_response": "Sure, I have updated the code to say 'Hello Updated World'."
 }
 
-### 3. Project Versions
+### 3. Project Prompt History
 
-# @name getProjectVersions
-GET {{baseUrl}}/projects/{{projectId}}/versions
+# @name getProjectPrompts
+GET {{baseUrl}}/projects/{{projectId}}/prompts
 Authorization: Bearer {{authToken}}
 
 ###
-@versionId = {{getProjectVersions.response.body[0].id}}
-
-###
-
-# @name getVersionById
-GET {{baseUrl}}/projects/{{projectId}}/versions/{{versionId}}
-Authorization: Bearer {{authToken}}
-
-###
-
-# @name restoreVersion
-POST {{baseUrl}}/projects/{{projectId}}/versions/{{versionId}}/restore
-Authorization: Bearer {{authToken}}
+@promptId = {{getProjectPrompts.response.body[0].id}}
 
 ###
 
@@ -129,10 +117,10 @@ Authorization: Bearer {{authToken}}
 DELETE {{baseUrl}}/projects/{{projectId}}
 Authorization: Bearer {{authToken}}
 
-### 4. Advanced Versioning Examples
+### 4. Advanced Prompt History Examples
 
 # @name updateProjectV2
-# This will automatically create a version 
+# This will log a new prompt to the history
 PUT {{baseUrl}}/projects/{{projectId}}
 Authorization: Bearer {{authToken}}
 Content-Type: {{contentType}}
@@ -141,20 +129,12 @@ Content-Type: {{contentType}}
     "project_name": "My App v2",
     "generated_code": "console.log('v2 code');",
     "user_prompt": "Update to v2",
-    "version_name": "Major Update v2"
+    "ai_response": "Code updated to version 2."
 }
 
 ###
-# @name listVersions
-GET {{baseUrl}}/projects/{{projectId}}/versions
-Authorization: Bearer {{authToken}}
-
-###
-@lastVersionId = {{listVersions.response.body.data[0].id}}
-
-###
-# @name restoreToV1
-POST {{baseUrl}}/projects/{{projectId}}/versions/{{lastVersionId}}/restore
+# @name listPrompts
+GET {{baseUrl}}/projects/{{projectId}}/prompts
 Authorization: Bearer {{authToken}}
 
 

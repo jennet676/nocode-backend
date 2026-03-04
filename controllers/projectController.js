@@ -6,14 +6,24 @@ import { sendSuccess, sendError, sendNotFound } from '../utils/responseHelper.js
  * Täze taslama döretmek. (Create a new project)
  */
 export const createProject = async (req, res) => {
-    const { project_name, generated_code, user_prompt } = req.body;
+    const { project_name, generated_code, user_prompt, ai_response } = req.body;
     const user_id = req.user.id;
     try {
-        const result = await db.query(
+        // 1. Create the project
+        const projectResult = await db.query(
             'INSERT INTO projects (user_id, project_name, generated_code, user_prompt) VALUES ($1, $2, $3, $4) RETURNING *',
             [user_id, project_name, generated_code, user_prompt]
         );
-        sendSuccess(res, result.rows[0], 'Taslama döredildi', 201);
+        
+        const project = projectResult.rows[0];
+
+        // 2. Log the initial prompt
+        await db.query(
+            'INSERT INTO project_prompts (project_id, prompt, ai_response, generated_code) VALUES ($1, $2, $3, $4)',
+            [project.id, user_prompt, ai_response || 'Project created', generated_code]
+        );
+
+        sendSuccess(res, project, 'Taslama döredildi we taryha ýazyldy', 201);
     } catch (err) {
         sendError(res, err.message);
     }
@@ -45,140 +55,53 @@ export const getProjectById = async (req, res) => {
 
 export const updateProject = async (req, res) => {
     const { id } = req.params;
-    const { project_name, generated_code, user_prompt, version_name } = req.body;
+    const { project_name, generated_code, user_prompt, ai_response } = req.body;
     const user_id = req.user.id;
     try {
-        // 1. Get current project state to save as a version before updating
+        // 1. Check if project exists
         const current = await db.query('SELECT * FROM projects WHERE id = $1 AND user_id = $2', [id, user_id]);
         if (current.rows.length === 0) {
             return sendNotFound(res, 'Taslama tapylmady');
         }
 
-        // 2. Save current state to versions
-        await db.query(
-            'INSERT INTO project_versions (project_id, version_name, generated_code, user_prompt) VALUES ($1, $2, $3, $4)',
-            [id, version_name || `Auto-save ${new Date().toISOString()}`, current.rows[0].generated_code, current.rows[0].user_prompt]
-        );
-
-        // 3. Update the project
+        // 2. Update the project
         const result = await db.query(
             'UPDATE projects SET project_name = $1, generated_code = $2, user_prompt = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
             [project_name || current.rows[0].project_name, generated_code, user_prompt, id, user_id]
         );
+
+        // 3. Log the prompt/action to history
+        await db.query(
+            'INSERT INTO project_prompts (project_id, prompt, ai_response, generated_code) VALUES ($1, $2, $3, $4)',
+            [id, user_prompt, ai_response || 'Project updated', generated_code]
+        );
         
-        sendSuccess(res, result.rows[0], 'Taslama täzelendi we köne wersiýasy ýatda saklanyldy');
+        sendSuccess(res, result.rows[0], 'Taslama täzelendi we taryha ýazyldy');
     } catch (err) {
         sendError(res, err.message);
     }
 };
 
 /**
- * Taslamanyň wersiýalaryny almak. (Get project versions)
+ * Taslamanyň prompt taryhyny almak. (Get project prompt history)
  */
-export const getProjectVersions = async (req, res) => {
+export const getProjectPrompts = async (req, res) => {
     const { id } = req.params;
     const user_id = req.user.id;
     try {
         const project = await db.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [id, user_id]);
         if (project.rows.length === 0) return sendNotFound(res, 'Taslama tapylmady');
 
-        const result = await db.query('SELECT id, version_name, user_prompt, created_at FROM project_versions WHERE project_id = $1 ORDER BY created_at DESC', [id]);
-        sendSuccess(res, result.rows, 'Wersiýalar alyndy');
-    } catch (err) {
-        sendError(res, err.message);
-    }
-};
-
-/**
- * Taslamanyň belli bir wersiýasyny döretmek. (Create a specific project version manually)
- */
-export const createProjectVersion = async (req, res) => {
-    const { id } = req.params;
-    const { version_name, generated_code, user_prompt } = req.body;
-    try {
         const result = await db.query(
-            'INSERT INTO project_versions (project_id, version_name, generated_code, user_prompt) VALUES ($1, $2, $3, $4) RETURNING *',
-            [id, version_name, generated_code, user_prompt]
+            'SELECT id, prompt, ai_response, generated_code, created_at FROM project_prompts WHERE project_id = $1 ORDER BY created_at DESC',
+            [id]
         );
-        sendSuccess(res, result.rows[0], 'Täze wersiýa döredildi', 201);
+        sendSuccess(res, result.rows, 'Prompt taryhy alyndy');
     } catch (err) {
         sendError(res, err.message);
     }
 };
 
-/**
- * Wersiýanyň adyny üýtgetmek. (Update version metadata)
- */
-export const updateProjectVersion = async (req, res) => {
-    const { id, versionId } = req.params;
-    const { version_name } = req.body;
-    try {
-        const result = await db.query(
-            'UPDATE project_versions SET version_name = $1 WHERE id = $2 AND project_id = $3 RETURNING *',
-            [version_name, versionId, id]
-        );
-        if (result.rows.length === 0) return sendNotFound(res, 'Wersiýa tapylmady');
-        sendSuccess(res, result.rows[0], 'Wersiýa ady üýtgedildi');
-    } catch (err) {
-        sendError(res, err.message);
-    }
-};
-
-/**
- * Wersiýany pozmak. (Delete a specific version)
- */
-export const deleteProjectVersion = async (req, res) => {
-    const { id, versionId } = req.params;
-    try {
-        const result = await db.query('DELETE FROM project_versions WHERE id = $1 AND project_id = $2 RETURNING *', [versionId, id]);
-        if (result.rows.length === 0) return sendNotFound(res, 'Wersiýa tapylmady');
-        sendSuccess(res, null, 'Wersiýa pozuldy');
-    } catch (err) {
-        sendError(res, err.message);
-    }
-};
-
-/**
- * Wersiýanyň maglumatyny almak. (Get specific version details)
- */
-export const getProjectVersionById = async (req, res) => {
-    const { id, versionId } = req.params;
-    const user_id = req.user.id;
-    try {
-        const project = await db.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [id, user_id]);
-        if (project.rows.length === 0) return sendNotFound(res, 'Taslama tapylmady');
-
-        const result = await db.query('SELECT * FROM project_versions WHERE id = $1 AND project_id = $2', [versionId, id]);
-        if (result.rows.length === 0) return sendNotFound(res, 'Wersiýa tapylmady');
-        sendSuccess(res, result.rows[0], 'Wersiýa alyndy');
-    } catch (err) {
-        sendError(res, err.message);
-    }
-};
-
-/**
- * Wersiýany dikeltmek. (Restore project to a specific version)
- */
-export const restoreProjectVersion = async (req, res) => {
-    const { id, versionId } = req.params;
-    const user_id = req.user.id;
-    try {
-        const project = await db.query('SELECT * FROM projects WHERE id = $1 AND user_id = $2', [id, user_id]);
-        if (project.rows.length === 0) return sendNotFound(res, 'Taslama tapylmady');
-
-        const version = await db.query('SELECT * FROM project_versions WHERE id = $1 AND project_id = $2', [versionId, id]);
-        if (version.rows.length === 0) return sendNotFound(res, 'Wersiýa tapylmady');
-
-        // Restore project with version code and prompt
-        const result = await db.query(
-            'UPDATE projects SET generated_code = $1, user_prompt = $2 WHERE id = $3 RETURNING *',
-            [version.rows[0].generated_code, version.rows[0].user_prompt, id]
-        );
-        sendSuccess(res, result.rows[0], 'Taslama öňki ýagdaýyna dikeldildi');
-    } catch (err) {
-        sendError(res, err.message);
-    }
-};
 
 /**
  * Taslamany pozmak. (Delete project)
