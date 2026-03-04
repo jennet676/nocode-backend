@@ -12,15 +12,12 @@ import authMiddleware from '../middleware/auth.js';
  *       required:
  *         - email
  *         - password
- *         - confirmPassword
  *       properties:
  *         id:
  *           type: integer
  *         email:
  *           type: string
  *         password:
- *           type: string
- *         confirmPassword:
  *           type: string
  */
 

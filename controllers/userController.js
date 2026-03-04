@@ -14,14 +14,10 @@ const hashPassword = (password) => {
  * Täze ulanyjy hasabyny döretmek (Register new user)
  */
 export const register = async (req, res) => {
-    const { email, password, confirmPassword } = req.body;
+    const { email, password } = req.body;
     
-    if (!email || !password || !confirmPassword) {
-        return sendBadRequest(res, 'Ähli meýdançalary dolduryň (email, parol we tassyklama paroly)');
-    }
-
-    if (password !== confirmPassword) {
-        return sendBadRequest(res, 'Parollar bir-birine gabat gelmeýär');
+    if (!email || !password) {
+        return sendBadRequest(res, 'Ähli meýdançalary dolduryň (email we parol)');
     }
 
     try {

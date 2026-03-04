@@ -10,8 +10,7 @@ Content-Type: {{contentType}}
 
 {
     "email": "test@example.com",
-    "password": "password123",
-    "confirmPassword": "password123"
+    "password": "password123"
 }
 
 ###
