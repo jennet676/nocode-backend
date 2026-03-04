@@ -14,16 +14,21 @@ const hashPassword = (password) => {
  * Täze ulanyjy hasabyny döretmek (Register new user)
  */
 export const register = async (req, res) => {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
-        return sendBadRequest(res, 'Ulanyjy ady, email we paroly hökmandyr');
+    const { email, password, confirmPassword } = req.body;
+    
+    if (!email || !password || !confirmPassword) {
+        return sendBadRequest(res, 'Ähli meýdançalary dolduryň (email, parol we tassyklama paroly)');
+    }
+
+    if (password !== confirmPassword) {
+        return sendBadRequest(res, 'Parollar bir-birine gabat gelmeýär');
     }
 
     try {
         const hashedPassword = hashPassword(password);
         const result = await db.query(
-            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
-            [username, email, hashedPassword]
+            'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',
+            [email, hashedPassword]
         );
         sendSuccess(res, result.rows[0], 'Hasap döredildi', 201);
     } catch (err) {
@@ -39,27 +44,26 @@ export const register = async (req, res) => {
  * Sisteme girmek (Login)
  */
 export const login = async (req, res) => {
-    const { email, username, password } = req.body;
-    const loginId = email || username;
+    const { email, password } = req.body;
 
-    if (!loginId || !password) {
-        return sendBadRequest(res, 'Email/Ulanyjy ady we parol hökmandyr');
+    if (!email || !password) {
+        return sendBadRequest(res, 'Email we parol hökmandyr');
     }
 
     try {
         const result = await db.query(
-            'SELECT * FROM users WHERE email = $1 OR username = $1',
-            [loginId]
+            'SELECT * FROM users WHERE email = $1',
+            [email]
         );
 
         if (result.rows.length === 0) {
-            return sendUnauthorized(res, 'Email/Ulanyjy ady ýa-da parol nädogry');
+            return sendUnauthorized(res, 'Email ýa-da parol nädogry');
         }
 
         const user = result.rows[0];
         const hashedPassword = hashPassword(password);
         if (user.password !== hashedPassword) {
-            return sendUnauthorized(res, 'Email/Ulanyjy ady ýa-da parol nädogry');
+            return sendUnauthorized(res, 'Email ýa-da parol nädogry');
         }
 
         const token = jwt.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1d' });
