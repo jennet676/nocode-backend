@@ -129,6 +129,34 @@ Authorization: Bearer {{authToken}}
 DELETE {{baseUrl}}/projects/{{projectId}}
 Authorization: Bearer {{authToken}}
 
+### 4. Advanced Versioning Examples
+
+# @name updateProjectV2
+# This will automatically create a version 
+PUT {{baseUrl}}/projects/{{projectId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+    "project_name": "My App v2",
+    "generated_code": "console.log('v2 code');",
+    "user_prompt": "Update to v2",
+    "version_name": "Major Update v2"
+}
+
+###
+# @name listVersions
+GET {{baseUrl}}/projects/{{projectId}}/versions
+Authorization: Bearer {{authToken}}
+
+###
+@lastVersionId = {{listVersions.response.body.data[0].id}}
+
+###
+# @name restoreToV1
+POST {{baseUrl}}/projects/{{projectId}}/versions/{{lastVersionId}}/restore
+Authorization: Bearer {{authToken}}
+
 
 ### 4. Swagger Documentation
 

@@ -23,9 +23,9 @@ export const getProjects = async (req, res) => {
     const user_id = req.user.id;
     try {
         const result = await db.query('SELECT id, project_name, user_prompt, created_at FROM projects WHERE user_id = $1', [user_id]);
-        res.json(result.rows);
+        sendSuccess(res, result.rows, 'Taslamalar alyndy');
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err.message);
     }
 };
 
@@ -35,11 +35,11 @@ export const getProjectById = async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM projects WHERE id = $1 AND user_id = $2', [id, user_id]);
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Project not found' });
+            return sendNotFound(res, 'Taslama tapylmady');
         }
-        res.json(result.rows[0]);
+        sendSuccess(res, result.rows[0], 'Taslama maglumaty alyndy');
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err.message);
     }
 };
 
@@ -51,7 +51,7 @@ export const updateProject = async (req, res) => {
         // 1. Get current project state to save as a version before updating
         const current = await db.query('SELECT * FROM projects WHERE id = $1 AND user_id = $2', [id, user_id]);
         if (current.rows.length === 0) {
-            return res.status(404).json({ error: 'Project not found' });
+            return sendNotFound(res, 'Taslama tapylmady');
         }
 
         // 2. Save current state to versions
@@ -66,9 +66,9 @@ export const updateProject = async (req, res) => {
             [project_name || current.rows[0].project_name, generated_code, user_prompt, id, user_id]
         );
         
-        res.json(result.rows[0]);
+        sendSuccess(res, result.rows[0], 'Taslama täzelendi we köne wersiýasy ýatda saklanyldy');
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err.message);
     }
 };
 
