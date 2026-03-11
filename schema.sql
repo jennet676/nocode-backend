@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS projects (
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     project_name VARCHAR(255) NOT NULL,
     generated_code TEXT,
-    user_prompt TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS project_prompts (
     project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
     prompt TEXT NOT NULL,
     ai_response TEXT,
-    generated_code TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

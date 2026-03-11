@@ -1,5 +1,5 @@
 import express from 'express';
-import * as projectController from '../controllers/projectController.js';
+import * as promptController from '../controllers/promptController.js';
 import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
@@ -10,19 +10,11 @@ router.use(authMiddleware);
  * @swagger
  * components:
  *   schemas:
- *     Project:
+ *     Prompt:
  *       type: object
  *       required:
- *         - project_name
- *       properties:
- *         id:
- *           type: integer
- *         project_name:
- *           type: string
- *         generated_code:
- *           type: string
- *     ProjectPrompt:
- *       type: object
+ *         - project_id
+ *         - prompt
  *       properties:
  *         id:
  *           type: integer
@@ -39,10 +31,10 @@ router.use(authMiddleware);
 
 /**
  * @swagger
- * /api/projects:
+ * /api/prompts:
  *   post:
- *     summary: Create a new project
- *     tags: [Projects]
+ *     summary: Create a new prompt
+ *     tags: [Prompts]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -50,33 +42,39 @@ router.use(authMiddleware);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Project'
+ *             $ref: '#/components/schemas/Prompt'
  *     responses:
  *       201:
- *         description: Project created
+ *         description: Prompt created
  */
-router.post('/', projectController.createProject);
+router.post('/', promptController.createPrompt);
 
 /**
  * @swagger
- * /api/projects:
+ * /api/prompts:
  *   get:
- *     summary: Get all user projects
- *     tags: [Projects]
+ *     summary: Get all prompts (optional filter by project_id)
+ *     tags: [Prompts]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: project_id
+ *         schema:
+ *           type: integer
+ *         description: Filter prompts by project ID
  *     responses:
  *       200:
- *         description: List of projects
+ *         description: List of prompts
  */
-router.get('/', projectController.getProjects);
+router.get('/', promptController.getAllPrompts);
 
 /**
  * @swagger
- * /api/projects/{id}:
+ * /api/prompts/{id}:
  *   get:
- *     summary: Get project by ID
- *     tags: [Projects]
+ *     summary: Get prompt by ID
+ *     tags: [Prompts]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -87,36 +85,16 @@ router.get('/', projectController.getProjects);
  *           type: integer
  *     responses:
  *       200:
- *         description: Project details
+ *         description: Prompt details
  */
-router.get('/:id', projectController.getProjectById);
+router.get('/:id', promptController.getPromptById);
 
 /**
  * @swagger
- * /api/projects/{id}/prompts:
- *   get:
- *     summary: Get all prompt history of a project
- *     tags: [Project Prompts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: List of project prompts
- */
-router.get('/:id/prompts', projectController.getProjectPrompts);
-
-/**
- * @swagger
- * /api/projects/{id}:
+ * /api/prompts/{id}:
  *   put:
- *     summary: Update project (logs the prompt/response to history)
- *     tags: [Projects]
+ *     summary: Update prompt
+ *     tags: [Prompts]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -130,19 +108,19 @@ router.get('/:id/prompts', projectController.getProjectPrompts);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Project'
+ *             $ref: '#/components/schemas/Prompt'
  *     responses:
  *       200:
- *         description: Project updated
+ *         description: Prompt updated
  */
-router.put('/:id', projectController.updateProject);
+router.put('/:id', promptController.updatePrompt);
 
 /**
  * @swagger
- * /api/projects/{id}:
+ * /api/prompts/{id}:
  *   delete:
- *     summary: Delete project
- *     tags: [Projects]
+ *     summary: Delete prompt
+ *     tags: [Prompts]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -153,8 +131,8 @@ router.put('/:id', projectController.updateProject);
  *           type: integer
  *     responses:
  *       200:
- *         description: Project deleted
+ *         description: Prompt deleted
  */
-router.delete('/:id', projectController.deleteProject);
+router.delete('/:id', promptController.deletePrompt);
 
 export default router;

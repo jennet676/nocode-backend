@@ -5,6 +5,7 @@ dotenv.config();
 
 import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import promptRoutes from './routes/promptRoutes.js';
 import { createDatabaseIfNotExists, initializeTables } from './db.js';
 import { setupSwagger } from './swagger.js';
 
@@ -19,6 +20,7 @@ setupSwagger(app);
 
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/prompts', promptRoutes);
 
 const startServer = async () => {
     try {
